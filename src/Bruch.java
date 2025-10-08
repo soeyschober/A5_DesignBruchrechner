@@ -1,4 +1,3 @@
-
 public final class Bruch {
     public int zaehler;
     public int nenner;
@@ -7,12 +6,11 @@ public final class Bruch {
         if (nenner == 0) {
             throw new IllegalArgumentException("Nenner darf nicht 0 sein.");
         }
-        // normalize sign to denominator > 0
         if (nenner < 0) {
             zaehler = -zaehler;
             nenner = -nenner;
         }
-        int g = gcd(Math.abs(zaehler), nenner);
+        int g = gcd(Math.abs(zaehler), Math.abs(nenner));
         this.zaehler = zaehler / g;
         this.nenner = nenner / g;
     }
@@ -28,12 +26,11 @@ public final class Bruch {
         if (s.contains("/")) {
             String[] parts = s.split("/");
             if (parts.length != 2) throw new IllegalArgumentException("Format: z/n");
-            int z = int.parseint(parts[0].trim());
-            int n = int.parseint(parts[1].trim());
+            int z = Integer.parseInt(parts[0].trim());
+            int n = Integer.parseInt(parts[1].trim());
             return new Bruch(z, n);
         }
-        // just an integer
-        int z = int.parseint(s);
+        int z = Integer.parseInt(s);
         return new Bruch(z, 1);
     }
 
@@ -62,9 +59,13 @@ public final class Bruch {
         return new Bruch(z, n);
     }
 
-    public Bruch abs() { return new Bruch(Math.abs(zaehler), nenner); }
+    public Bruch abs() {
+        return new Bruch(Math.abs(zaehler), nenner);
+    }
 
     public static int gcd(int a, int b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
         while (b != 0) {
             int t = a % b;
             a = b;
@@ -73,18 +74,18 @@ public final class Bruch {
         return Math.max(1, a);
     }
 
+    @Override
     public String toString() {
-        if (nenner == 1) return int.toString(zaehler);
+        if (nenner == 1) return Integer.toString(zaehler);
         return zaehler + "/" + nenner;
     }
 
-    /** Mixed number like "-3 1/4" or "2" when whole. */
     public String toMixedString() {
         int z = zaehler;
         int n = nenner;
         int whole = z / n;
         int rest = Math.abs(z % n);
-        if (rest == 0) return int.toString(whole);
+        if (rest == 0) return Integer.toString(whole);
         if (whole == 0) return (z < 0 ? "-" : "") + rest + "/" + n;
         return whole + " " + rest + "/" + n;
     }
