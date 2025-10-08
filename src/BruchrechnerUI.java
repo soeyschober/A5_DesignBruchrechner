@@ -6,10 +6,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
-
+/**
+ * {@summary Einfache Swing-Oberfläche zum Rechnen mit Brüchen (A op B).}
+ * Baut Eingabe, Operatorauswahl, Buttons und Ergebnisbereich auf und färbt das UI leicht rosa ein.
+ */
 public class BruchrechnerUI extends JPanel {
-
     private JTextField aZ;
     private JTextField aN;
     private JTextField bZ;
@@ -30,14 +35,25 @@ public class BruchrechnerUI extends JPanel {
     private JPanel fussPL;
     private JPanel ergebnisPL;
 
+    private static final Color BG      = new Color(0xFFF5F8);
+    private static final Color SURFACE = new Color(0xFFE8F0);
+    private static final Color ACCENT  = new Color(0xFF5C8A);
+    private static final Color TEXT    = new Color(0x292929);
+    private static final Color TEXT_MUTED = new Color(0x5E5E5E);
+    private static final Color ERROR   = new Color(0xB00020);
+
+    /**
+     * {@summary Initialisiert das UI, erzeugt alle Komponenten und verdrahtet Events.}
+     * Setzt Layout, Eingabefelder, Operatorauswahl, Buttons, Ergebnisbereich, Tastenkürzel und wendet das Farbthema an.
+     */
     public BruchrechnerUI() {
         setLayout(new BorderLayout(12, 12));
         setBorder(new EmptyBorder(16, 16, 16, 16));
 
-        JLabel titel = new JLabel("Bruchrechner");
-        titel.setFont(titel.getFont().deriveFont(Font.BOLD, 20f));
-        titel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(titel, BorderLayout.NORTH);
+        headerLbl = new JLabel("Bruchrechner");
+        headerLbl.setFont(headerLbl.getFont().deriveFont(Font.BOLD, 20f));
+        headerLbl.setHorizontalAlignment(SwingConstants.CENTER);
+        add(headerLbl, BorderLayout.NORTH);
 
         // Center panel with inputs (3 Spalten: A | Operator | B)
         JPanel center = new JPanel(new GridBagLayout());
@@ -134,7 +150,8 @@ public class BruchrechnerUI extends JPanel {
             aZ.requestFocusInWindow();
         });
         tauschen.addActionListener(e -> {
-            String z = aZ.getText(), n = aN.getText();
+            String z = aZ.getText();
+            String n = aN.getText();
             aZ.setText(bZ.getText());
             aN.setText(bN.getText());
             bZ.setText(z);
@@ -148,8 +165,18 @@ public class BruchrechnerUI extends JPanel {
         });
 
         setTooltipsAndA11y();
+        setColorTheme();
     }
 
+    /**
+     * {@summary Fügt einen Bruchblock (Zähler/Separator/Nenner) in das Grid ein.}
+     * Zentriert Beschriftung und Felder, begrenzt Feldgrößen und positioniert Block abhängig vom Label (A links, B rechts).
+     * @param parent Container, in den eingefügt wird
+     * @param c Basis-GridBagConstraints für Abstände
+     * @param label Kennzeichnung des Bruchs ("A" oder "B")
+     * @param z Textfeld für Zähler
+     * @param n Textfeld für Nenner
+     */
     private void addFrac(JPanel parent, GridBagConstraints c, String label, JTextField z, JTextField n) {
         JLabel head = new JLabel("Bruch " + label);
         head.setHorizontalAlignment(SwingConstants.CENTER); // Überschrift auch mittig
@@ -186,7 +213,11 @@ public class BruchrechnerUI extends JPanel {
         parent.add(container, cc);
     }
 
-
+    /**
+     * {@summary Liest beide Brüche, wendet den gewählten Operator an und zeigt das Ergebnis an.}
+     * Validiert Ganzzahlen, fängt Fehler ab und zeigt Meldungen im Fehler-Label.
+     * @param e ActionEvent der auslösenden Komponente
+     */
     private void onBerechnen(ActionEvent e) {
         fehler.setText("");
         try {
@@ -214,6 +245,15 @@ public class BruchrechnerUI extends JPanel {
         }
     }
 
+    /**
+     * {@summary Liest Zähler und Nenner aus zwei Textfeldern und erzeugt einen Bruch.}
+     * Wirft eine IllegalArgumentException bei leeren Feldern und NumberFormatException bei ungültigen Zahlen.
+     * @param z Textfeld für Zähler
+     * @param n Textfeld für Nenner
+     * @return neuer Bruch aus den gelesenen Werten
+     * @throws IllegalArgumentException wenn Zähler oder Nenner leer sind
+     * @throws NumberFormatException wenn keine ganzen Zahlen eingegeben wurden
+     */
     private Bruch read(JTextField z, JTextField n) {
         String zs = z.getText().trim();
         String ns = n.getText().trim();
@@ -225,6 +265,11 @@ public class BruchrechnerUI extends JPanel {
         return new Bruch(zl, nl);
     }
 
+    /**
+     * {@summary Beschränkt ein Textfeld auf ganze Zahlen (optional mit Minus) und setzt zentrierte Darstellung.}
+     * Installiert einen DocumentFilter, Tooltip und Textausrichtung.
+     * @param tf das zu konfigurierende Textfeld
+     */
     private void onlyInteger(JTextField tf) {
         ((AbstractDocument) tf.getDocument()).setDocumentFilter(new DocumentFilter() {
             @Override public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
@@ -246,6 +291,10 @@ public class BruchrechnerUI extends JPanel {
         tf.setToolTipText("Ganze Zahl, z. B. -3 oder 42");
     }
 
+    /**
+     * {@summary Setzt Tooltips und Accessible-Namen für Eingabefelder und Buttons.}
+     * Verbessert Bedienbarkeit und Screenreader-Unterstützung.
+     */
     private void setTooltipsAndA11y() {
         aZ.getAccessibleContext().setAccessibleName("Zähler A");
         aN.getAccessibleContext().setAccessibleName("Nenner A");
@@ -257,6 +306,11 @@ public class BruchrechnerUI extends JPanel {
         tauschen.setToolTipText("Tauscht A und B");
     }
 
+    /**
+     * {@summary Vereinheitlicht die Preferred/Minimum/Maximum-Größe mehrerer Textfelder.}
+     * Sorgt dafür, dass alle Eingabefelder gleich groß wirken.
+     * @param fields die zu vereinheitlichenden Textfelder
+     */
     private void unifyFieldSizes(JTextField... fields) {
         Dimension max = new Dimension(0, 0);
         for (JTextField f : fields) {
@@ -268,6 +322,116 @@ public class BruchrechnerUI extends JPanel {
             f.setPreferredSize(max);
             f.setMinimumSize(max);
             f.setMaximumSize(max);
+        }
+    }
+
+    /**
+     * {@summary Wendet das leichte Rosa-Theme an und färbt Eingabefelder, Buttons und Panels.}
+     * Setzt Grundfarben, Rahmen und ruft eine Baum-Durchfärbung für Ergebnis- und Fraktionsbereiche auf.
+     */
+    private void setColorTheme() {
+        // Grundfarben
+        setBackground(BG);
+        headerLbl.setForeground(ACCENT);
+
+        // Textfelder schlicht gleich stylen
+        for (JTextField f : new JTextField[]{aZ, aN, bZ, bN}) {
+            f.setOpaque(true);
+            f.setBackground(Color.WHITE);
+            f.setForeground(TEXT);
+            f.setCaretColor(ACCENT);
+            f.setBorder(new CompoundBorder(
+                    new LineBorder(new Color(0xFFC2D3), 1, true),
+                    new EmptyBorder(6, 8, 6, 8)
+            ));
+        }
+
+        // Operator-Combo und Buttons basic
+        op.setBackground(Color.WHITE);
+        op.setForeground(TEXT);
+        op.setBorder(new CompoundBorder(
+                new LineBorder(new Color(0xFFC2D3), 1, true),
+                new EmptyBorder(2, 6, 2, 6)
+        ));
+
+        berechnen.setBackground(ACCENT);
+        berechnen.setForeground(Color.WHITE);
+        berechnen.setOpaque(true);
+        berechnen.setBorder(new CompoundBorder(
+                new LineBorder(new Color(0xE24B79), 1, true),
+                new EmptyBorder(8,14,8,14)
+        ));
+
+        Color softBg = new Color(0xFFF0F5);
+        Color softFg = new Color(0xE24B79);
+        Color softBd = new Color(0xFFC2D3);
+
+        reset.setBackground(softBg);
+        reset.setForeground(softFg);
+        reset.setOpaque(true);
+        reset.setBorder(new CompoundBorder(new LineBorder(softBd, 1, true), new EmptyBorder(8,14,8,14)));
+
+        tauschen.setBackground(softBg);
+        tauschen.setForeground(softFg);
+        tauschen.setOpaque(true);
+        tauschen.setBorder(new CompoundBorder(new LineBorder(softBd, 1, true), new EmptyBorder(8,14,8,14)));
+
+        // Ergebnis-Panel und Fraktionsboxen minimal anfärben
+        colorTree(this);
+        // Ergebnis-Texte
+        ergBruch.setForeground(TEXT);
+        ergGemischt.setForeground(TEXT_MUTED);
+        fehler.setForeground(ERROR);
+    }
+
+    /**
+     * {@summary Färbt rekursiv relevante Container: TitledBorder-Panels, Fraktions-Boxen und Separatoren.}
+     * Setzt Hintergrundfarben, Rahmen und Label-Farben für "Bruch X" sowie die Operator-Box.
+     * @param c Startkomponente für die rekursive Durchfärbung
+     */
+    private void colorTree(Component c) {
+        if (c instanceof JPanel p) {
+            // TitledBorder (Ergebnis)
+            if (p.getBorder() instanceof TitledBorder tb) {
+                p.setOpaque(true);
+                p.setBackground(SURFACE);
+                tb.setTitleColor(ACCENT);
+                p.setBorder(new CompoundBorder(
+                        new LineBorder(new Color(0xFFD2E0), 1, true),
+                        new EmptyBorder(8,8,8,8)
+                ));
+            }
+            // BoxLayout-Panels (Z|—|N)
+            if (p.getLayout() instanceof BoxLayout) {
+                p.setOpaque(true);
+                p.setBackground(SURFACE);
+                p.setBorder(new CompoundBorder(
+                        new LineBorder(new Color(0xFFD2E0), 1, true),
+                        new EmptyBorder(8,8,8,8)
+                ));
+            }
+        }
+        if (c instanceof JLabel lbl) {
+            String t = lbl.getText();
+            if (t != null && (t.startsWith("Bruch ") || t.equals("Operator"))) {
+                lbl.setForeground(TEXT_MUTED);
+                if (lbl.getParent() instanceof JPanel opBox) {
+                    opBox.setOpaque(true);
+                    opBox.setBackground(SURFACE);
+                    opBox.setBorder(new CompoundBorder(
+                            new LineBorder(new Color(0xFFD2E0), 1, true),
+                            new EmptyBorder(8,8,8,8)
+                    ));
+                }
+            }
+        }
+        if (c instanceof JSeparator sep) {
+            sep.setForeground(ACCENT);
+            sep.setBackground(ACCENT);
+            sep.setPreferredSize(new Dimension(0, 2));
+        }
+        if (c instanceof Container ct) {
+            for (Component child : ct.getComponents()) colorTree(child);
         }
     }
 }
