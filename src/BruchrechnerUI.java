@@ -55,7 +55,6 @@ public class BruchrechnerUI extends JPanel {
         headerLbl.setHorizontalAlignment(SwingConstants.CENTER);
         add(headerLbl, BorderLayout.NORTH);
 
-        // Center panel with inputs (3 Spalten: A | Operator | B)
         JPanel center = new JPanel(new GridBagLayout());
         add(center, BorderLayout.CENTER);
         GridBagConstraints base = new GridBagConstraints();
@@ -326,7 +325,7 @@ public class BruchrechnerUI extends JPanel {
     }
 
     /**
-     * {@summary Wendet das leichte Rosa-Theme an und färbt Eingabefelder, Buttons und Panels.}
+     * {@summary Wendet das Farb-Theme an und färbt Eingabefelder, Buttons und Panels.}
      * Setzt Grundfarben, Rahmen und ruft eine Baum-Durchfärbung für Ergebnis- und Fraktionsbereiche auf.
      */
     private void setColorTheme() {
