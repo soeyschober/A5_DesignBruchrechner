@@ -30,3 +30,5 @@ Reset löscht alle Eingaben, Tauschen vertauscht Bruch A und B.
 <img width="1159" height="703" alt="image" src="https://github.com/user-attachments/assets/a8ee114f-aa4b-4e8e-95ac-e4cf4bdce3c6" />
 
 ### Endgültiges Design
+
+<img width="606" height="539" alt="image" src="https://github.com/user-attachments/assets/8e701fc4-8c5b-43ed-9f8a-f88826d19009" />
